@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}設計ネタ収集{% endblock %}</title>
+  <style>
+    :root { color-scheme: light; }
+    body { font-family: sans-serif; margin: 0; background: #f6f6f4; color: #222; }
+    header { background: #1f2a37; color: #fff; padding: 12px 20px; }
+    header a { color: #fff; text-decoration: none; margin-right: 16px; }
+    main { padding: 20px; max-width: 1100px; }
+    table { border-collapse: collapse; width: 100%; background: #fff; }
+    th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; font-size: 14px; }
+    th { background: #eef1f4; }
+    .msg { background: #e6f4ea; padding: 8px 12px; margin-bottom: 12px; }
+    .err { background: #fdecea; padding: 8px 12px; margin-bottom: 12px; }
+    .cards { display: flex; flex-wrap: wrap; gap: 12px; }
+    .card { background: #fff; border: 1px solid #ddd; padding: 12px 16px; min-width: 160px; }
+    form.inline { display: inline; }
+    textarea, input[type=text], select { width: 100%; box-sizing: border-box; }
+    textarea { min-height: 80px; font-family: inherit; }
+    label { font-weight: 600; display: block; margin-top: 10px; }
+    .meta { color: #555; font-size: 13px; }
+    footer { padding: 12px 20px; color: #555; font-size: 12px; }
+    button { padding: 6px 12px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/">収集状況</a>
+    <a href="/items">事例一覧</a>
+  </header>
+  <main>
+    {% block body %}{% endblock %}
+  </main>
+  <footer>
+    Thank you to arXiv for use of its open access interoperability.
+    本エージェントは arXiv の名称・ロゴで後援を暗示しない。
+    Stack Exchange Network が出典の投稿は CC BY-SA。出典 URL は各事例の evidence に記載する。
+  </footer>
+</body>
+</html>

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}事例一覧{% endblock %}
+{% block body %}
+<h1>事例一覧</h1>
+{% if message %}<p class="msg">{{ message }}</p>{% endif %}
+<p class="meta">未承認・却下はエクスポートに含めない。選択に含まれていても承認済みかつ evidence が完全なものだけを出す。</p>
+<form method="get" action="/items">
+  <label>収集領域
+    <select name="collection_domain">
+      <option value="">すべて</option>
+      {% for v in ["software_dev", "ai", "accounting"] %}
+      <option value="{{ v }}" {% if collection_domain == v %}selected{% endif %}>{{ v }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>domain
+    <select name="domain">
+      <option value="">すべて</option>
+      {% for v in ["software", "workflow", "research"] %}
+      <option value="{{ v }}" {% if domain == v %}selected{% endif %}>{{ v }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>状態
+    <select name="status">
+      <option value="">すべて</option>
+      {% for v in ["draft", "approved", "rejected"] %}
+      <option value="{{ v }}" {% if status == v %}selected{% endif %}>{{ v }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>取得日 (UTC YYYY-MM-DD)
+    <input type="text" name="fetched_on" value="{{ fetched_on }}">
+  </label>
+  <button type="submit">フィルタ</button>
+</form>
+
+<form id="items-form" method="post">
+  <input type="hidden" name="collection_domain" value="{{ collection_domain }}">
+  <input type="hidden" name="domain" value="{{ domain }}">
+  <input type="hidden" name="status" value="{{ status }}">
+  <input type="hidden" name="fetched_on" value="{{ fetched_on }}">
+  <p>
+    <label><input type="checkbox" id="select-all"> 表示中の項目をすべて選択</label>
+    <button type="submit" formaction="/items/bulk-approve" id="bulk-approve" disabled>選択した0件を承認</button>
+    <button type="submit" formaction="/items/push-to-sebas" id="push-sebas" disabled>選択した項目をセバスへ送信</button>
+    <button type="submit" formaction="/export">表示中（またはチェックした件）から承認済みをエクスポート</button>
+  </p>
+  <table>
+    <tr>
+      <th></th>
+      <th>ID</th>
+      <th>収集領域</th>
+      <th>domain</th>
+      <th>状態</th>
+      <th>goal</th>
+      <th>出典 URL</th>
+      <th>取得日時</th>
+      <th>SHA-256</th>
+    </tr>
+    {% for item in items %}
+    <tr>
+      <td><input type="checkbox" class="item-select" name="item_ids" value="{{ item.id }}"></td>
+      <td><a href="/items/{{ item.id }}">{{ item.id }}</a></td>
+      <td>{{ item.collection_domain }}</td>
+      <td>{{ item.domain }}</td>
+      <td>{{ item.status }}{% if item.sebas_pushed_at %}<br><span class="badge">送信済み</span>{% endif %}</td>
+      <td>{{ (item.goal or "")[:80] }}</td>
+      <td><a href="{{ item.source_url }}">{{ item.source_url }}</a></td>
+      <td>{{ item.fetched_at }}</td>
+      <td>{{ (item.content_sha256 or "")[:8] }}…</td>
+    </tr>
+    {% endfor %}
+  </table>
+</form>
+<script>
+(() => {
+  const all = document.getElementById('select-all');
+  const boxes = [...document.querySelectorAll('.item-select')];
+  const button = document.getElementById('bulk-approve');
+  const pushButton = document.getElementById('push-sebas');
+  function update() {
+    const count = boxes.filter(box => box.checked).length;
+    button.disabled = count === 0;
+    pushButton.disabled = count === 0;
+    button.textContent = `選択した${count}件を承認`;
+    all.checked = boxes.length > 0 && count === boxes.length;
+    all.indeterminate = count > 0 && count < boxes.length;
+  }
+  all.addEventListener('change', () => {
+    boxes.forEach(box => { box.checked = all.checked; });
+    update();
+  });
+  boxes.forEach(box => box.addEventListener('change', update));
+  button.addEventListener('click', event => {
+    if (boxes.every(box => !box.checked)) event.preventDefault();
+  });
+  pushButton.addEventListener('click', event => {
+    if (boxes.every(box => !box.checked)) event.preventDefault();
+  });
+  update();
+})();
+</script>
+{% endblock %}

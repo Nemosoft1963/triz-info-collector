@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}収集状況{% endblock %}
+{% block body %}
+<h1>収集状況</h1>
+
+<div class="cards">
+  <div class="card">件数 合計 <strong>{{ stats.total }}</strong></div>
+  <div class="card">draft {{ stats.by_status.draft }}</div>
+  <div class="card">approved {{ stats.by_status.approved }}</div>
+  <div class="card">rejected {{ stats.by_status.rejected }}</div>
+  <div class="card">最終収集時刻<br>{{ last_finished_at }}</div>
+  <div class="card">直近ジョブ<br>{{ last_status or "未実行" }}</div>
+  <div class="card">直近スキップ<br>{{ last_skipped }}</div>
+  <div class="card">下書き生成<br>{{ draft_provider }}</div>
+</div>
+
+{% if skip_counts %}
+<h2>直近ジョブのスキップ内訳</h2>
+<table>
+  <tr><th>理由</th><th>件数</th></tr>
+  {% for reason, n in skip_counts.items() %}
+  <tr>
+    <td>{{ reason }}</td>
+    <td>{{ n }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+<h2>領域別件数（収集領域）</h2>
+<table>
+  <tr><th>収集領域</th><th>合計</th><th>draft</th><th>approved</th><th>rejected</th></tr>
+  {% for code in ["software_dev", "ai", "accounting"] %}
+  {% set row = stats.by_collection_domain.get(code, {}) %}
+  <tr>
+    <td>{{ code }}</td>
+    <td>{{ row.get("total", 0) }}</td>
+    <td>{{ row.get("draft", 0) }}</td>
+    <td>{{ row.get("approved", 0) }}</td>
+    <td>{{ row.get("rejected", 0) }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<h2>承認済みの domain</h2>
+<table>
+  <tr><th>domain</th><th>approved</th></tr>
+  <tr><td>software</td><td>{{ stats.approved_by_domain.software }}</td></tr>
+  <tr><td>workflow</td><td>{{ stats.approved_by_domain.workflow }}</td></tr>
+  <tr><td>research</td><td>{{ stats.approved_by_domain.research }}</td></tr>
+</table>
+
+<h2>操作</h2>
+{% if progress.running %}
+<p>実行中: 開始 {{ progress.started_at }} / 現在の情報源 {{ progress.source_code or "—" }}</p>
+{% else %}
+<form method="post" action="/collect">
+  <button type="submit">収集を手動開始</button>
+</form>
+{% endif %}
+<p class="meta">定期実行: {{ schedule }} / 次回予定 {{ next_scheduled_at }}</p>
+
+<h2>直近のジョブ（最大 20）</h2>
+<table>
+  <tr><th>id</th><th>開始</th><th>終了</th><th>trigger</th><th>結果</th><th>draft</th><th>skip</th><th>error</th></tr>
+  {% for run in runs %}
+  <tr>
+    <td>{{ run.id }}</td>
+    <td>{{ run.started_at }}</td>
+    <td>{{ run.finished_at or "—" }}</td>
+    <td>{{ run.trigger }}</td>
+    <td>{{ run.status }}</td>
+    <td>{{ run.draft_count }}</td>
+    <td>{{ run.skipped_count }}</td>
+    <td>{{ run.error_count }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<h2>直近のエラー</h2>
+<table>
+  <tr><th>時刻</th><th>情報源</th><th>HTTP</th><th>メッセージ</th></tr>
+  {% for e in errors %}
+  <tr>
+    <td>{{ e.occurred_at }}</td>
+    <td>{{ e.source_code }}</td>
+    <td>{{ e.http_status or "—" }}</td>
+    <td>{{ e.message }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

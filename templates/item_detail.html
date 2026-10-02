@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}事例 {{ item.id }}{% endblock %}
+{% block body %}
+<h1>事例 {{ item.id }}</h1>
+{% if error %}<p class="err">{{ error }}</p>{% endif %}
+{% if message %}<p class="msg">{{ message }}</p>{% endif %}
+<p class="meta">
+  状態: {{ item.status }} /
+  情報源: {{ item.source_code }} /
+  収集領域: {{ item.collection_domain }} /
+  取得: {{ item.fetched_at }} /
+  公開: {{ item.published_at or "—" }} /
+  truncated: {{ item.truncated }} /
+  言語: {{ item.language }}
+</p>
+<p class="meta">出典 URL（編集不可）: {{ item.source_url }}</p>
+<p class="meta">本文 SHA-256（編集不可）: {{ item.content_sha256 }}</p>
+{% if item.reject_reason %}<p>却下理由: {{ item.reject_reason }}</p>{% endif %}
+
+<form method="post" action="/items/{{ item.id }}/save">
+  <label>domain
+    <select name="domain">
+      {% for v in ["software", "workflow", "research"] %}
+      <option value="{{ v }}" {% if item.domain == v %}selected{% endif %}>{{ v }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>goal（{{ field_max }} 字以内）
+    <textarea name="goal">{{ item.goal }}</textarea>
+    <span class="meta">{{ (item.goal or "")|length }} 字</span>
+  </label>
+  <label>improve
+    <textarea name="improve">{{ item.improve }}</textarea>
+    <span class="meta">{{ (item.improve or "")|length }} 字</span>
+  </label>
+  <label>worsens
+    <textarea name="worsens">{{ item.worsens }}</textarea>
+    <span class="meta">{{ (item.worsens or "")|length }} 字</span>
+  </label>
+  <label>ideal
+    <textarea name="ideal">{{ item.ideal }}</textarea>
+    <span class="meta">{{ (item.ideal or "")|length }} 字</span>
+  </label>
+  <label>physical（任意）
+    <textarea name="physical">{{ item.physical or "" }}</textarea>
+    <span class="meta">{{ (item.physical or "")|length }} 字</span>
+  </label>
+  <label>constraints
+    <textarea name="constraints">{{ item.constraints }}</textarea>
+    <span class="meta">{{ (item.constraints or "")|length }} 字</span>
+  </label>
+  <label>resources
+    <textarea name="resources">{{ item.resources }}</textarea>
+    <span class="meta">{{ (item.resources or "")|length }} 字</span>
+  </label>
+  <p class="meta">evidence メタ（編集不可）</p>
+  <pre>出典URL: {{ item.source_url }}
+取得日時: {{ item.fetched_at }}
+本文SHA-256: {{ item.content_sha256 }}</pre>
+  <label>根拠（言い換え）
+    <textarea name="evidence_reason">{{ evidence_reason }}</textarea>
+  </label>
+  <p>
+    <button type="submit">保存</button>
+    <button type="submit" formaction="/items/{{ item.id }}/approve">承認</button>
+  </p>
+</form>
+<form method="post" action="/items/{{ item.id }}/reject">
+  <label>却下理由（任意）
+    <input type="text" name="reject_reason" value="">
+  </label>
+  <button type="submit">却下</button>
+</form>
+{% if item.status == "approved" %}
+<form method="post" action="/items/{{ item.id }}/unapprove">
+  <button type="submit">承認を取り消し（draft に戻す）</button>
+</form>
+{% endif %}
+
+{% if body %}
+<h2>レビュー用本文（draft 中のみ保持）</h2>
+<pre>{{ body }}</pre>
+{% endif %}
+{% endblock %}
