@@ -1,5 +1,6 @@
 # triz-info-collector
 
+[![CI](https://github.com/Nemosoft1963/triz-info-collector/actions/workflows/ci.yml/badge.svg)](https://github.com/Nemosoft1963/triz-info-collector/actions/workflows/ci.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 公開ソース(エンジニアリングブログ・GitHub・Qiita・Stack Exchange等)から、TRIZ(発明的問題解決理論)的な「課題定義」のネタを自動収集し、人手レビューを経て取り込むための収集エージェントです。社内の業務自動化基盤「セバス」のサポートエージェントの1つとして運用しています。
